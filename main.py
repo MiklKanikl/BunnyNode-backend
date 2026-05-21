@@ -15,7 +15,7 @@ def create_token():
 
 @app.route("/api/get_data/", methods=['Post'])
 def get_data():
-    t = request.args.get("key")
+    t = int(request.args.get("key"))
     if t in data.keys():
         return jsonify(data[t])
     else:
@@ -25,9 +25,9 @@ def get_data():
 def send_data():
     c_request = request.get_json()
     c_data = c_request["data"]
-    c_key = c_request["key"]
+    c_key = int(c_request["key"])
     data[c_key] = c_data
     return "success", 200
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0', port=5000)
