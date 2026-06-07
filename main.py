@@ -1,13 +1,15 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template, send_file
 import random
-import json
-import copy
 
 app = Flask(__name__)
 data = {}
 @app.route("/")
 def index():
-    return "BunnyNode Backend is running"
+    return render_template("index.html")
+
+@app.route("/download/windows/")
+def download_windows():
+    return send_file("releases/main.exe", as_attachment=True, download_name="BunnyNode.exe")
 
 @app.route("/api/create_token/")
 def create_token():
