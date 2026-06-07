@@ -1,9 +1,7 @@
 from flask import Flask, request, jsonify, render_template, send_file
-from flask_talisman import Talisman
 import random
 
 app = Flask(__name__)
-Talisman(app, force_https=True, force_https_permanent=False)
 data = {}
 @app.route("/")
 def index():
