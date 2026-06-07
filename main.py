@@ -5,6 +5,9 @@ import copy
 
 app = Flask(__name__)
 data = {}
+@app.route("/")
+def index():
+    return "BunnyNode Backend is running"
 
 @app.route("/api/create_token/")
 def create_token():
