@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Download Our App | Official Releases</title>
-  <!-- Google Fonts + simple reset -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <title>BunnyNode - Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100;14..32,200;14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -14,230 +13,188 @@
     }
 
     body {
-      background: linear-gradient(145deg, #f6f9fc 0%, #eef2f5 100%);
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 2rem 1.5rem;
-    }
-
-    /* main card container */
-    .download-card {
-      max-width: 1280px;
-      width: 100%;
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(0px);
-      background: #ffffff;
-      border-radius: 3rem;
-      box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25), 0 8px 18px rgba(0, 0, 0, 0.05);
+      position: relative;
       overflow: hidden;
-      transition: all 0.2s ease;
     }
 
-    /* header area */
-    .hero {
-      background: #0a1c2f;
-      padding: 2.5rem 2rem 2rem 2rem;
+    body::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    body::after {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -5%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      animation: float 8s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(30px); }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 2.5rem;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 100px rgba(59, 130, 246, 0.1);
+      padding: 4rem 3rem;
       text-align: center;
-      color: white;
+      position: relative;
+      z-index: 1;
+      animation: fadeInUp 0.8s ease-out;
     }
 
-    .hero h1 {
-      font-size: 2.4rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      margin-bottom: 0.5rem;
+    .container h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #e0e7ff 0%, #a5f3fc 50%, #86efac 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
     }
 
-    .hero .tagline {
-      font-size: 1.05rem;
-      opacity: 0.85;
-      font-weight: 500;
-      max-width: 500px;
-      margin: 0 auto;
+    .container p {
+      font-size: 1.15rem;
+      color: rgba(226, 232, 240, 0.9);
+      font-weight: 400;
+      margin-bottom: 3rem;
+      line-height: 1.6;
+      letter-spacing: 0.3px;
     }
 
-    .badge {
-      display: inline-block;
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(4px);
-      border-radius: 100px;
-      padding: 0.25rem 1rem;
-      font-size: 0.75rem;
-      font-weight: 500;
-      margin-top: 1rem;
-    }
-
-    /* three-column layout */
-    .downloads-container {
+    .links {
       display: flex;
-      flex-wrap: wrap;
-      gap: 2rem;
+      gap: 1.5rem;
       justify-content: center;
-      padding: 3rem 2rem 3rem 2rem;
-      background: #ffffff;
+      flex-wrap: wrap;
     }
 
-    .platform-card {
-      flex: 1;
-      min-width: 260px;
-      background: #ffffff;
-      border-radius: 2rem;
-      box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      border: 1px solid rgba(0, 0, 0, 0.05);
-      padding: 1.8rem 1.5rem 2rem 1.5rem;
-      text-align: center;
-    }
-
-    .platform-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 28px 40px -16px rgba(0, 0, 0, 0.2);
-    }
-
-    /* platform icons (emoji/unicode fallback, but visually friendly) */
-    .platform-icon {
-      font-size: 3.2rem;
-      margin-bottom: 1rem;
-    }
-
-    .platform-name {
-      font-size: 1.8rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-      letter-spacing: -0.01em;
-    }
-
-    .platform-desc {
-      font-size: 0.85rem;
-      color: #4a5568;
-      margin-bottom: 1.8rem;
-      border-bottom: 1px solid #eef2f5;
-      display: inline-block;
-      padding-bottom: 0.35rem;
-    }
-
-    .file-info {
-      background: #f8fafc;
-      border-radius: 1.2rem;
-      padding: 0.8rem;
-      margin: 1rem 0 1.5rem 0;
-      font-size: 0.8rem;
-      color: #1e2a3e;
-      font-family: monospace;
-      word-break: break-all;
-    }
-
-    .file-info span {
-      font-weight: 600;
-      color: #0f3b5c;
-    }
-
-    .download-btn {
+    .links a {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      background: #0a1c2f;
-      color: white;
-      text-decoration: none;
+      padding: 1rem 2rem;
       font-weight: 600;
-      font-size: 1rem;
-      padding: 0.9rem 1.8rem;
-      border-radius: 60px;
-      transition: all 0.2s;
-      border: none;
-      cursor: pointer;
-      width: 100%;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .download-btn:hover {
-      background: #123d5e;
-      transform: scale(1.01);
-      box-shadow: 0 12px 18px -10px rgba(0, 0, 0, 0.2);
-    }
-
-    /* windows specific accent */
-    .platform-card.windows .download-btn { background: #0078d4; }
-    .platform-card.windows .download-btn:hover { background: #106ebe; }
-
-    .platform-card.macos .download-btn { background: #000000; }
-    .platform-card.macos .download-btn:hover { background: #2c2c2e; }
-
-    .platform-card.linux .download-btn { background: #1793d1; }
-    .platform-card.linux .download-btn:hover { background: #0f6b9c; }
-
-    /* footer section */
-    .footer-note {
-      text-align: center;
-      padding: 1.2rem 2rem 2rem 2rem;
-      font-size: 0.75rem;
-      color: #5a6e7c;
-      border-top: 1px solid #eef2f5;
-      background: #ffffff;
-    }
-
-    .footer-note a {
-      color: #0f3b5c;
       text-decoration: none;
+      border-radius: 1.25rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 1rem;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
     }
 
-    @media (max-width: 780px) {
-      .hero h1 { font-size: 1.8rem; }
-      .downloads-container { gap: 1.2rem; padding: 2rem 1rem; }
-      .platform-card { min-width: 240px; }
+    .links a::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: inherit;
+      filter: brightness(1.2);
+      transition: left 0.3s ease;
+      z-index: -1;
+    }
+
+    .links a:first-child {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: white;
+      border: 1px solid rgba(59, 130, 246, 0.5);
+      box-shadow: 0 10px 25px rgba(59, 130, 246, 0.2);
+    }
+
+    .links a:first-child:hover {
+      transform: translateY(-4px) scale(1.05);
+      box-shadow: 0 20px 40px rgba(59, 130, 246, 0.4);
+      border-color: rgba(59, 130, 246, 0.8);
+    }
+
+    .links a:last-child {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+      color: #a5f3fc;
+      border: 1.5px solid rgba(165, 243, 252, 0.3);
+    }
+
+    .links a:last-child:hover {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(139, 92, 246, 0.25) 100%);
+      color: #ffffff;
+      border-color: rgba(165, 243, 252, 0.6);
+      transform: translateY(-4px);
+      box-shadow: 0 15px 35px rgba(59, 130, 246, 0.2);
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        padding: 2.5rem 1.5rem;
+      }
+
+      .container h1 {
+        font-size: 2.25rem;
+      }
+
+      .container p {
+        font-size: 1rem;
+      }
+
+      .links {
+        flex-direction: column;
+      }
+
+      .links a {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
-<div class="download-card">
-  <div class="hero">
-    <h1>Download BunnyNode</h1>
-    <div class="tagline">Get the official release for your operating system</div>
-    <div class="badge">✅ verified files · direct download</div>
-  </div>
-
-  <div class="downloads-container">
-    <!-- WINDOWS CARD -->
-    <div class="platform-card windows">
-      <div class="platform-icon">🪟</div>
-      <div class="platform-name">Windows</div>
-      <div class="platform-desc">.exe installer / portable</div>
-      <!-- ⬇️ REPLACE 'windows/myfile.exe' WITH YOUR ACTUAL FILE PATH -->
-      <a href="https://bunnynode.farni.ng/download/windows" class="download-btn" download>
-        ⬇️ Download for Windows
-      </a>
-      <div style="font-size: 0.7rem; margin-top: 0.7rem; color: #6c7a8a;">Windows 10 / 11</div>
-    </div>
-
-    <!-- macOS CARD -->
-    <div class="platform-card macos">
-      <div class="platform-icon">🍏</div>
-      <div class="platform-name">macOS</div>
-      <div class="platform-desc">.dmg / universal binary</div>
-      <!-- ⬇️ REPLACE 'macos/myfile.dmg' WITH YOUR ACTUAL FILE PATH -->
-      <a class="download-btn" download>
-        Coming soon...
-      </a>
-      <div style="font-size: 0.7rem; margin-top: 0.7rem; color: #6c7a8a;">macOS 11+ (Intel & Apple Silicon)</div>
-    </div>
-
-    <!-- LINUX CARD -->
-    <div class="platform-card linux">
-      <div class="platform-icon">🐧</div>
-      <div class="platform-name">Linux</div>
-      <div class="platform-desc">.AppImage / .deb / .tar.gz</div>
-      <!-- ⬇️ REPLACE 'linux/myfile.AppImage' WITH YOUR ACTUAL FILE PATH -->
-      <a class="download-btn" download>
-        Coming soon...
-      </a>
-      <div style="font-size: 0.7rem; margin-top: 0.7rem; color: #6c7a8a;">Ubuntu / Debian / Fedora</div>
+  <div class="container">
+    <h1>BunnyNode</h1>
+    <p>Your all-in-one solution for seamless graph management and data visualisation.</p>
+    <div class="links">
+      <a href="/downloads">Download</a>
+      <a href="/docs">Documentation</a>
     </div>
   </div>
-</div>
-
 </body>
 </html>

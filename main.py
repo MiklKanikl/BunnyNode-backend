@@ -7,6 +7,14 @@ data = {}
 def index():
     return render_template("index.html")
 
+@app.route("/downloads/")
+def downloads():
+    return render_template("downloads.html")
+
+@app.route("/docs/")
+def docs():
+    return render_template("documentation.html")
+
 @app.route("/download/windows/")
 def download_windows():
     return send_file("releases/main.exe", as_attachment=True, download_name="BunnyNode.exe")
