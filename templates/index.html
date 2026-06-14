@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>BunnyNode - Home</title>
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/templates/favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100;14..32,200;14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
   <style>
     * {
@@ -18,11 +18,13 @@
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
       min-height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 2rem 1.5rem;
       position: relative;
-      overflow: hidden;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
 
     body::before {
@@ -165,9 +167,105 @@
       box-shadow: 0 15px 35px rgba(59, 130, 246, 0.2);
     }
 
+    .showoff {
+      margin-top: 4rem;
+      position: relative;
+      bottom: auto;
+      left: auto;
+      transform: none;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 900px;
+      padding: 2rem 2rem;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 2rem;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      margin-top: 3rem;
+      animation: fadeInUp 0.8s ease-out 0.3s both;
+    }
+
+    .showoff h1 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #a5f3fc;
+      margin: 0;
+      letter-spacing: 0.02em;
+    }
+
+    .showoff h2 {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: rgba(226, 232, 240, 0.8);
+      margin: 0;
+    }
+
+    .feature-heading {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #a5f3fc 0%, #86efac 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+
+    .feature-list {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .feature-item {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: rgba(226, 232, 240, 0.9);
+      padding: 0.75rem 1.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 2rem;
+      transition: all 0.3s ease;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out forwards;
+    }
+
+    .feature-item:nth-child(1) { animation-delay: 0.5s; }
+    .feature-item:nth-child(2) { animation-delay: 0.7s; }
+    .feature-item:nth-child(3) { animation-delay: 0.9s; }
+
+    .feature-item:hover {
+      transform: translateY(-2px);
+      background: rgba(165, 243, 252, 0.1);
+      color: #a5f3fc;
+    }
+
+    .feature-item:not(:last-child)::after {
+      content: "•";
+      margin-left: 1rem;
+      color: rgba(165, 243, 252, 0.4);
+    }
+
     @media (max-width: 640px) {
       .container {
-        padding: 2.5rem 1.5rem;
+        max-width: 900px;
+        width: 100%;
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        border-radius: 2.5rem;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 100px rgba(59, 130, 246, 0.1);
+        padding: 4rem 3rem;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+        animation: fadeInUp 0.8s ease-out;
+        overflow-y: auto;
+        max-height: 90vh;
       }
 
       .container h1 {
@@ -191,10 +289,18 @@
 <body>
   <div class="container">
     <h1>BunnyNode</h1>
-    <p>Your all-in-one solution for seamless graph management and data visualisation.</p>
+    <p>Diagrams and Data Visualisation for everyone</p>
     <div class="links">
       <a href="/downloads">Download</a>
       <a href="/docs">Documentation</a>
+    </div>
+  </div>
+  <div class="showoff">
+    <h2 class="feature-heading">Key Features</h2>
+    <div class="feature-list">
+      <span class="feature-item">Intuitive Graph Creation</span>
+      <span class="feature-item">Real-Time Data Collaboration</span>
+      <span class="feature-item">Export as PNG</span>
     </div>
   </div>
 </body>
