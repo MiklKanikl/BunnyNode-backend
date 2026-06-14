@@ -11,13 +11,9 @@ def index():
 def downloads():
     return render_template("downloads.html")
 
-@app.route("/docs/")
+@app.route("/docs/index")
 def docs():
-    return render_template("documentation.html")
-
-@app.route("/download/windows/")
-def download_windows():
-    return send_file("releases/main.exe", as_attachment=True, download_name="BunnyNode.exe")
+    return render_template("docs/index.html")
 
 @app.route("/api/create_token/")
 def create_token():

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>BunnyNode Documentation</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(145deg, #f6f9fc 0%, #eef2f5 100%);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    .back-button {
+      background: #0a1c2f;
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      transition: all 0.2s ease;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1002;
+    }
+
+    .back-button:hover {
+      background: #123d5e;
+      transform: scale(1.05);
+      box-shadow: 0 8px 18px -6px rgba(0, 0, 0, 0.2);
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 280px;
+      height: 100vh;
+      background: #0a1c2f;
+      color: white;
+      padding: 5rem 1.5rem 2rem 1.5rem;
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar h3 {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .sidebar .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      background: linear-gradient(135deg, #a5f3fc 0%, #86efac 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      margin-top: 1rem;
+    }
+
+    .sidebar li {
+      margin-bottom: 0.5rem;
+    }
+
+    .sidebar a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      transition: color 0.2s;
+      display: block;
+      padding: 0.5rem 0;
+      font-size: 0.9rem;
+    }
+
+    .sidebar a:hover {
+      color: #a5f3fc;
+    }
+
+    .sidebar .section-title {
+      font-weight: 700;
+      color: white;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .doc-card {
+      max-width: 1040px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 3rem;
+      box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25), 0 8px 18px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      transition: all 0.2s ease;
+      margin: 1rem;
+      margin-left: 300px;
+    }
+
+    .doc-header {
+      background: #0a1c2f;
+      padding: 3rem 2rem;
+      text-align: center;
+      color: white;
+    }
+
+    .doc-header h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+
+    .doc-header .tagline {
+      font-size: 1.2rem;
+      opacity: 0.85;
+      font-weight: 500;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .doc-header .version {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      border-radius: 100px;
+      padding: 0.25rem 1rem;
+      font-size: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .doc-content {
+      padding: 2.5rem 3rem;
+      color: #1e293b;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .doc-content h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-top: 2.5rem;
+      margin-bottom: 1rem;
+      color: #0a1c2f;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 0.5rem;
+    }
+
+    .doc-content h2:first-of-type {
+      margin-top: 0;
+    }
+
+    .doc-content h3 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      color: #1e293b;
+    }
+
+    .doc-content p {
+      line-height: 1.7;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+
+    .doc-content a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+
+    .doc-content a:hover {
+      text-decoration: underline;
+    }
+
+    .doc-content ul {
+      margin: 1rem 0 1rem 2rem;
+      line-height: 1.7;
+    }
+
+    .doc-content li {
+      margin-bottom: 0.5rem;
+    }
+
+    .callout {
+      background: #f0f9ff;
+      border-left: 4px solid #3b82f6;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .doc-card {
+        margin-left: 1rem;
+      }
+      
+      .menu-toggle {
+        display: flex;
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        background: #0a1c2f;
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        cursor: pointer;
+        z-index: 1001;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+      }
+    }
+
+    @media (min-width: 769px) {
+      .menu-toggle {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+  <a href="/" class="back-button">← Back to Start</a>
+
+  <div class="sidebar">
+    <div class="logo">BunnyNode</div>
+    <h3>Documentation</h3>
+    
+    <div class="section-title">Getting Started</div>
+    <ul>
+      <li><a href="#welcome">Welcome</a></li>
+      <li><a href="#what-is-bunnynode">What is BunnyNode?</a></li>
+      <li><a href="#installation">Installation</a></li>
+    </ul>
+  </div>
+
+  <div class="doc-card">
+    <div class="doc-header">
+      <h1>BunnyNode Documentation</h1>
+      <div class="tagline">Comprehensive guides and API references for BunnyNode</div>
+      <div class="version">Version 1.0.0</div>
+    </div>
+    
+    <div class="doc-content">
+      <section id="welcome">
+        <h2>Welcome to BunnyNode</h2>
+        <p>BunnyNode is a powerful diagramming and data visualization tool designed for everyone from developers to designers. Whether you are creating flowcharts, UML diagrams, or data visualizations, BunnyNode makes it simple and intuitive.</p>
+      </section>
+
+      <section id="what-is-bunnynode">
+        <h2>What is BunnyNode?</h2>
+        <p>BunnyNode combines the simplicity of a whiteboard with the power of a professional diagramming tool. Key highlights include:</p>
+        <ul>
+          <li><strong>Intuitive drag-and-drop interface</strong> No learning curve required</li>
+          <li><strong>Real-time collaboration</strong> Work with your team simultaneously</li>
+          <li><strong>Export</strong> PNG (SVG coming soon)</li>
+          <li><strong>Cross-platform</strong> Available on Windows (macOS, and Linux coming soon)</li>
+        </ul>
+      </section>
+
+      <section id="installation">
+        <h2>Installation</h2>
+        <p>Documentation for installation coming soon.</p>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.sidebar a').forEach(link => {
+      link.addEventListener('click', (e) => {
+        const href = link.getAttribute('href');
+        if (href && href.startsWith('#')) {
+          e.preventDefault();
+          const targetId = href.substring(1);
+          const targetElement = document.getElementById(targetId);
+          if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth' });
+            if (window.innerWidth <= 768) {
+              document.querySelector('.sidebar').classList.remove('open');
+            }
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
