@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>BunnyNode Documentation</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style/docs.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+  <a href="/" class="back-button">← Back to Start</a>
+
+  <div class="sidebar">
+    <a href="/docs/index"><img src="/static/icons/favicon.png" alt="BunnyNode Logo" style="width: 64px; height: 64px; margin-bottom: 1rem;"></a>
+    <h3>BunnyDocs</h3>
+    
+    <div class="section-title">Nodes</div>
+    <ul>
+      <li><a href="#basic node properties">Basic Node Properties</a></li>
+      <li><a href="#rect">Rectangle Node</a></li>
+      <li><a href="#ellp">Ellipse Node</a></li>
+      <li><a href="#image">Image Node</a></li>
+    </ul>
+  </div>
+
+  <div class="doc-card">
+    <div class="doc-header">
+      <img src="/static/icons/favicon.png" alt="BunnyNode Logo">
+      <h2 style="margin-bottom: 0.5rem;">BunnyDocs</h2>
+      <div class="tagline">Comprehensive guides and API references for BunnyNode</div>
+      <div class="version">Version 1.0.0</div>
+    </div>
+    
+    <div class="doc-content">
+      <section id="basic node properties">
+        <h2>Basic Node Properties</h2>
+        <p>Every node in BunnyNode has several basic properties that define its appearance and behavior:</p>
+        <ul>
+          <li><strong>Position</strong>: x/y coordinates of the node in the canvas</li>
+          <li><strong>Size</strong>: width/height of the node</li>
+          <li><strong>Color</strong>: The fill color of the node</li>
+        </ul>
+      </section>
+
+      <section id="rect">
+        <h2>Rectangle Node</h2>
+        <p>Rectangle shaped node with only basic properties. Created via R or menubar.</p>
+      </section>
+
+      <section id="ellp">
+        <h2>Ellipse Node</h2>
+        <p>Ellipse shaped node with only basic properties. Created via E or menubar.</p>
+      </section>
+
+      <section id="image">
+        <h2>Image Node</h2>
+        <p>Image node that allows you to insert and manipulate images within your diagram. Created via I or menubar.</p>
+      </section>
+    </div>
+  </div>
+
+  <script src="/static/script/docs.js"></script>
+</body>
+</html>

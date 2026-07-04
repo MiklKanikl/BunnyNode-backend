@@ -3,6 +3,7 @@ import random
 
 app = Flask(__name__)
 data = {}
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -14,6 +15,10 @@ def downloads():
 @app.route("/docs/index")
 def docs():
     return render_template("docs/index.html")
+
+@app.route("/docs/nodes")
+def nodes():
+    return render_template("docs/nodes.html")
 
 @app.route("/api/create_token/")
 def create_token():
