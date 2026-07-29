@@ -1,189 +1,292 @@
-from flask import Flask, request, jsonify, render_template, send_file
+from flask import Flask, request, jsonify, render_template
 import random
+import uuid
+import json
+import asyncio
+import websockets
+import logging
+from datetime import datetime
+import threading
+import os
+from dotenv import load_dotenv
+
+logging.basicConfig(
+    format="%(asctime)s %(message)s",
+    level=logging.DEBUG,
+)
+
+load_dotenv()
 
 app = Flask(__name__)
-data = {}
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+
+if not app.config['SECRET_KEY']:
+    raise ValueError("No SECRET_KEY set for Flask application")
+
+rooms = {}
+active_sessions = {}
+room_clients = {}
+websocket_clients = {}
+loop = None
+
+def create_session(room_key, user_info=None):
+    session_id = str(uuid.uuid4())
+    active_sessions[session_id] = {
+        'room': room_key,
+        'last_activity': datetime.now().isoformat(),
+        'user_info': user_info or {'name': f'User_{random.randint(100,999)}'}
+    }
+    if room_key not in room_clients:
+        room_clients[room_key] = set()
+    room_clients[room_key].add(session_id)
+    return session_id
+
+def remove_session(session_id):
+    if session_id in active_sessions:
+        room = active_sessions[session_id]['room']
+        if room in room_clients:
+            room_clients[room].discard(session_id)
+            if not room_clients[room]:
+                del room_clients[room]
+        del active_sessions[session_id]
+        if session_id in websocket_clients:
+            del websocket_clients[session_id]
+
+def apply_delta(scene_key, changes):
+    scene = rooms[scene_key]
+    
+    if changes["type"] == "nodes_added":
+        for node in changes["nodes"]:
+            scene["nodes"].append(node)
+            scene["node_index"][node["id"]] = node
+    
+    if changes["type"] == "nodes_modified":
+        for node_update in changes["nodes"]:
+            node_id = node_update["id"]
+            if node_id in scene["node_index"]:
+                scene["node_index"][node_id].update(node_update)
+    
+    if changes["type"] == "nodes_and_edges_removed":
+        for node_update in changes["nodes"]:
+            node_id = node_update["id"]
+            if node_id in scene["node_index"]:
+                node = scene["node_index"][node_id]
+                del scene["nodes"][scene["nodes"].index(node)]
+                del scene["node_index"][node_id]
+        
+        for edge_id in changes["edges"]:
+            if edge_id in scene["edge_index"]:
+                edge = scene["edge_index"][edge_id]
+                del scene["edges"][scene["edges"].index(edge)]
+                del scene["edge_index"][edge_id]
+    
+    if changes["type"] == "edges_added":
+        for edge in changes["edges"]:
+            scene["edges"].append(edge)
+            scene["edge_index"][edge.get("id")] = edge
+    
+    if changes["type"] == "edges_modified":
+        for edge_update in changes["edges"]:
+            edge_id = edge_update.get("id")
+            if edge_id in scene["edge_index"]:
+                scene["edge_index"][edge_id].update(edge_update)
+
+    if changes["type"] == "nodes_and_edges_added":
+        for node in changes["nodes"]:
+            scene["nodes"].append(node)
+            scene["node_index"][node["id"]] = node
+        
+        for edge in changes["edges"]:
+            scene["edges"].append(edge)
+            scene["edge_index"][edge.get("id")] = edge
+    
+    rooms[scene_key] = scene
+
+async def broadcast_to_room(room_key, message, exclude_sid=None):
+    if room_key not in room_clients:
+        return
+    for sid in room_clients[room_key]:
+        if sid == exclude_sid:
+            continue
+        if sid in websocket_clients:
+            try:
+                print(f"broadcasting message: {json.dumps(message)}")
+                await websocket_clients[sid].send(json.dumps(message))
+            except:
+                pass
+
+async def websocket_handler(websocket):
+    session_id = None
+    room = None
+    
+    try:
+        raw_msg = await websocket.recv()
+        msg = json.loads(raw_msg)
+        
+        if msg.get('type') == 'join':
+            room_key = int(msg.get('room'))
+            user_info = msg.get('user_info', {})
+            
+            if room_key not in rooms:
+                await websocket.send(json.dumps({
+                    'type': 'error',
+                    'message': 'Room not found'
+                }))
+                return
+            
+            session_id = create_session(room_key, user_info)
+            websocket_clients[session_id] = websocket
+            room = room_key
+            
+            await websocket.send(json.dumps({
+                'type': 'joined',
+                'session_id': session_id,
+                'room': room_key,
+                'version': rooms[room_key]['version'],
+                'nodes': rooms[room_key]['nodes'],
+                'edges': rooms[room_key]['edges']
+            }))
+            
+            await broadcast_to_room(room_key, {
+                'type': 'user_joined',
+                'session_id': session_id,
+                'user_info': active_sessions[session_id]['user_info'],
+                'total_clients': len(room_clients.get(room_key, set()))
+            })
+            
+            async for raw_msg in websocket:
+                try:
+                    msg = json.loads(raw_msg)
+                    print(f"received message: {msg}")
+                    msg_type = msg.get('type')
+                    
+                    if msg_type == 'scene_change':
+                        changes = msg.get('changes')
+                        version = msg.get('version')
+                        
+                        if room not in rooms:
+                            continue
+                        
+                        if version != rooms[room]['version']:
+                            await websocket.send(json.dumps({
+                                'type': 'conflict',
+                                'server_version': rooms[room]['version']
+                            }))
+                            continue
+                        
+                        apply_delta(room, changes)
+                        rooms[room]['version'] += 1
+                        rooms[room]['last_modified'] = datetime.now().isoformat()
+                        
+                        await broadcast_to_room(room, {
+                            'type': 'scene_update',
+                            'changes': changes,
+                            'version': rooms[room]['version'],
+                            'updated_by': session_id
+                        }, exclude_sid=session_id)
+                        
+                        await websocket.send(json.dumps({
+                            'type': 'update_success',
+                            'new_version': rooms[room]['version']
+                        }))
+                    
+                    elif msg_type == 'ping':
+                        await websocket.send(json.dumps({'type': 'pong'}))
+                    
+                    elif msg_type == 'leave':
+                        break
+                        
+                except json.JSONDecodeError:
+                    await websocket.send(json.dumps({
+                        'type': 'error',
+                        'message': 'Invalid JSON'
+                    }))
+    
+    except websockets.exceptions.ConnectionClosed:
+        pass
+    finally:
+        if session_id:
+            if room:
+                await broadcast_to_room(room, {
+                    'type': 'user_left',
+                    'session_id': session_id,
+                    'user_info': active_sessions.get(session_id, {}).get('user_info')
+                })
+            remove_session(session_id)
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
-@app.route("/downloads/")
+@app.route("/downloads")
 def downloads():
     return render_template("downloads.html")
 
 @app.route("/docs/index")
-def docs():
+def docs_index():
     return render_template("docs/index.html")
 
 @app.route("/docs/nodes")
-def nodes():
+def docs_nodes():
     return render_template("docs/nodes.html")
 
-@app.route("/api/create_token/")
+@app.route("/api/create_token/", methods=['GET'])
 def create_token():
-    t = 0
-    while t == 0 or t in data.keys():
-        t = random.randint(1000, 9999)
-
-    data[t] = {
-        "nodes": [], 
+    room_id = 0
+    while room_id == 0 or room_id in rooms:
+        room_id = random.randint(1000, 9999)
+    
+    rooms[room_id] = {
+        "nodes": [],
         "edges": [],
         "version": 0,
         "node_index": {},
-        "edge_index": {}
+        "edge_index": {},
+        "created_at": datetime.now().isoformat(),
+        "last_modified": datetime.now().isoformat()
     }
-    return str(t)
+    return str(room_id)
 
 @app.route("/api/get_data/", methods=['GET', 'POST'])
 def get_data():
     if request.method == 'POST' and request.is_json:
-        t = request.get_json().get("key")
+        room_key = request.get_json().get("key")
     else:
-        t = request.args.get("key")
+        room_key = request.args.get("key")
     
     try:
-        t = int(t)
+        room_key = int(room_key)
     except (ValueError, TypeError):
         return "Invalid key format", 400
     
-    if t in data.keys():
+    if room_key in rooms:
         return jsonify({
-            "version": data[t]["version"],
-            "nodes": data[t]["nodes"],
-            "edges": data[t]["edges"]
+            "version": rooms[room_key]["version"],
+            "nodes": rooms[room_key]["nodes"],
+            "edges": rooms[room_key]["edges"]
         })
     else:
-        return "key does not exist", 400
+        return "Key does not exist", 400
 
-@app.route("/api/send_delta/", methods=['POST'])
-def send_delta():
-    try:
-        c_request = request.get_json()
-        c_key = int(c_request["key"])
-        base_version = c_request.get("base_version", 0)
-        changes = c_request.get("changes", {})
-        
-        if c_key not in data:
-            return "Scene not found", 404
-        
-        current_version = data[c_key]["version"]
-        if base_version != current_version:
-            return jsonify({
-                "status": "conflict",
-                "message": f"Version mismatch. Your version: {base_version}, Server version: {current_version}",
-                "server_version": current_version,
-                "conflict": True
-            }), 409
-        
-        apply_delta(c_key, changes)
-        
-        data[c_key]["version"] += 1
-        
-        return jsonify({
-            "status": "success",
-            "new_version": data[c_key]["version"]
-        }), 200
-        
-    except Exception as e:
-        return f"Error: {str(e)}", 400
-
-def apply_delta(scene_key, changes):
-    """Apply delta changes to the scene"""
-    scene = data[scene_key]
-    
-    if "nodes_added" in changes:
-        for node in changes["nodes_added"]:
-            scene["nodes"].append(node)
-            scene["node_index"][node["id"]] = node
-    
-    if "nodes_modified" in changes:
-        for node_update in changes["nodes_modified"]:
-            node_id = node_update["id"]
-            if node_id in scene["node_index"]:
-                scene["node_index"][node_id].update(node_update)
-            else:
-                scene["nodes"].append(node_update)
-                scene["node_index"][node_id] = node_update
-    
-    if "nodes_removed" in changes:
-        for node_id in changes["nodes_removed"]:
-            if node_id in scene["node_index"]:
-                node = scene["node_index"][node_id]
-                scene["nodes"].remove(node)
-                del scene["node_index"][node_id]
-    
-    if "edges_added" in changes:
-        for edge in changes["edges_added"]:
-            scene["edges"].append(edge)
-            scene["edge_index"][edge.get("id")] = edge
-    
-    if "edges_modified" in changes:
-        for edge_update in changes["edges_modified"]:
-            edge_id = edge_update.get("id")
-            if edge_id in scene["edge_index"]:
-                scene["edge_index"][edge_id].update(edge_update)
-    
-    if "edges_removed" in changes:
-        for edge_id in changes["edges_removed"]:
-            if edge_id in scene["edge_index"]:
-                edge = scene["edge_index"][edge_id]
-                scene["edges"].remove(edge)
-                del scene["edge_index"][edge_id]
-
-@app.route("/api/get_changes_since/", methods=['GET'])
-def get_changes_since():
-    t = request.args.get("key")
-    since_version = request.args.get("version", 0)
-    
-    try:
-        t = int(t)
-        since_version = int(since_version)
-    except (ValueError, TypeError):
-        return "Invalid parameters", 400
-    
-    if t not in data:
-        return "Scene not found", 404
-    
-    if data[t]["version"] > since_version:
-        return jsonify({
-            "version": data[t]["version"],
-            "full_update": True,
-            "nodes": data[t]["nodes"],
-            "edges": data[t]["edges"]
-        })
-    else:
-        return jsonify({
-            "version": data[t]["version"],
-            "full_update": False,
-            "message": "Already up to date"
-        })
-
-@app.route("/api/send_data/", methods=['POST'])
-def send_data():
-    try:
-        c_request = request.get_json()
-        c_data = c_request["data"]
-        c_key = int(c_request["key"])
-        
-        data[c_key] = {
-            "nodes": c_data.get("nodes", []),
-            "edges": c_data.get("edges", []),
-            "version": data.get(c_key, {}).get("version", 0) + 1,
-            "node_index": {},
-            "edge_index": {}
+@app.route("/api/session_info/")
+def session_info():
+    return jsonify({
+        "active_sessions": len(active_sessions),
+        "rooms": {
+            room: len(clients) for room, clients in room_clients.items()
         }
-        
-        for node in data[c_key]["nodes"]:
-            data[c_key]["node_index"][node["id"]] = node
-        
-        for edge in data[c_key]["edges"]:
-            data[c_key]["edge_index"][edge.get("id")] = edge
-        
-        return "success", 200
-        
-    except Exception as e:
-        return f"Error: {str(e)}", 400
+    })
+
+async def main():
+    start_server = await websockets.serve(websocket_handler, "0.0.0.0", 8765)
+    
+    flask_thread = threading.Thread(
+        target=lambda: app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
+    )
+    flask_thread.daemon = True
+    flask_thread.start()
+    
+    await asyncio.Future()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    asyncio.run(main())
