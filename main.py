@@ -110,6 +110,7 @@ async def broadcast_to_room(room_key, message, exclude_sid=None):
             continue
         if sid in websocket_clients:
             try:
+                print(f"broadcasting message: {json.dumps(message)}")
                 await websocket_clients[sid].send(json.dumps(message))
             except:
                 pass
@@ -156,6 +157,7 @@ async def websocket_handler(websocket):
             async for raw_msg in websocket:
                 try:
                     msg = json.loads(raw_msg)
+                    print(f"received message: {msg}")
                     msg_type = msg.get('type')
                     
                     if msg_type == 'scene_change':
