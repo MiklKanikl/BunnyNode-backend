@@ -58,49 +58,51 @@ def apply_delta(scene_key, changes):
     if changes["type"] == "nodes_added":
         for node in changes["nodes"]:
             scene["nodes"].append(node)
-            scene["node_index"][node["id"]] = node
     
     if changes["type"] == "nodes_modified":
         for node_update in changes["nodes"]:
             node_id = node_update["id"]
-            if node_id in scene["node_index"]:
-                scene["node_index"][node_id].update(node_update)
+            for n in scene["nodes"]:
+                print(n["id"], "|n|", node_id)
+                if n["id"] == node_id:
+                    del n
+            scene["nodes"].append(node_update)
     
     if changes["type"] == "nodes_and_edges_removed":
         for node_update in changes["nodes"]:
             node_id = node_update["id"]
-            if node_id in scene["node_index"]:
-                node = scene["node_index"][node_id]
-                del scene["nodes"][scene["nodes"].index(node)]
-                del scene["node_index"][node_id]
+            for n in scene["nodes"]:
+                if n["id"] == node_id:
+                    del n
         
-        for edge_id in changes["edges"]:
-            if edge_id in scene["edge_index"]:
-                edge = scene["edge_index"][edge_id]
-                del scene["edges"][scene["edges"].index(edge)]
-                del scene["edge_index"][edge_id]
+        for edge_update in changes["edges"]:
+            edge_id = edge_update["id"]
+            for e in scene["edges"]:
+                if e["id"] == edge_id:
+                    del e
     
     if changes["type"] == "edges_added":
         for edge in changes["edges"]:
             scene["edges"].append(edge)
-            scene["edge_index"][edge.get("id")] = edge
     
     if changes["type"] == "edges_modified":
         for edge_update in changes["edges"]:
             edge_id = edge_update.get("id")
-            if edge_id in scene["edge_index"]:
-                scene["edge_index"][edge_id].update(edge_update)
+            for e in scene["edges"]:
+                print(e["id"], "|e|", edge_id)
+                if e["id"] == edge_id:
+                    del e
+            scene["edges"].append(edge_update)
 
     if changes["type"] == "nodes_and_edges_added":
         for node in changes["nodes"]:
             scene["nodes"].append(node)
-            scene["node_index"][node["id"]] = node
         
         for edge in changes["edges"]:
             scene["edges"].append(edge)
-            scene["edge_index"][edge.get("id")] = edge
     
     rooms[scene_key] = scene
+    print(rooms[scene_key])
 
 async def broadcast_to_room(room_key, message, exclude_sid=None):
     if room_key not in room_clients:
@@ -110,7 +112,6 @@ async def broadcast_to_room(room_key, message, exclude_sid=None):
             continue
         if sid in websocket_clients:
             try:
-                print(f"broadcasting message: {json.dumps(message)}")
                 await websocket_clients[sid].send(json.dumps(message))
             except:
                 pass
@@ -240,8 +241,6 @@ def create_token():
         "nodes": [],
         "edges": [],
         "version": 0,
-        "node_index": {},
-        "edge_index": {},
         "created_at": datetime.now().isoformat(),
         "last_modified": datetime.now().isoformat()
     }
