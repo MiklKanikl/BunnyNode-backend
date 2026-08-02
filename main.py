@@ -7,21 +7,13 @@ import websockets
 import logging
 from datetime import datetime
 import threading
-import os
-from dotenv import load_dotenv
 
 logging.basicConfig(
     format="%(asctime)s %(message)s",
     level=logging.DEBUG,
 )
 
-load_dotenv()
-
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
-
-if not app.config['SECRET_KEY']:
-    raise ValueError("No SECRET_KEY set for Flask application")
 
 rooms = {}
 active_sessions = {}
