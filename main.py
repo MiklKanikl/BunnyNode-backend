@@ -66,7 +66,8 @@ def apply_delta(scene_key, changes):
                 del scene["nodes"][scene["nodes"].index(node)]
                 del scene["node_index"][node_id]
         
-        for edge_id in changes["edges"]:
+        for edge_update in changes["edges"]:
+            edge_id = edge_update["id"]
             if edge_id in scene["edge_index"]:
                 edge = scene["edge_index"][edge_id]
                 del scene["edges"][scene["edges"].index(edge)]
@@ -148,7 +149,6 @@ async def websocket_handler(websocket):
             async for raw_msg in websocket:
                 try:
                     msg = json.loads(raw_msg)
-                    print(f"received message: {msg}")
                     msg_type = msg.get('type')
                     
                     if msg_type == 'scene_change':
