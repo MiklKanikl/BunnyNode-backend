@@ -1,12 +1,13 @@
-from flask import Flask, request, jsonify, render_template
-import random
-import uuid
 import json
-import asyncio
-import websockets
 import logging
-from datetime import datetime
+import random
+import sys
 import threading
+import uuid
+from datetime import datetime
+
+from flask import Flask, jsonify, render_template, request
+from flask_sock import Sock
 
 logging.basicConfig(
     format="%(asctime)s %(message)s",
@@ -14,35 +15,42 @@ logging.basicConfig(
 )
 
 app = Flask(__name__)
+sock = Sock(app)
 
 rooms = {}
 active_sessions = {}
 room_clients = {}
 websocket_clients = {}
-loop = None
+websocket_send_locks = {}
+state_lock = threading.RLock()
 
 def create_session(room_key, user_info=None):
-    session_id = str(uuid.uuid4())
-    active_sessions[session_id] = {
-        'room': room_key,
-        'last_activity': datetime.now().isoformat(),
-        'user_info': user_info or {'name': f'User_{random.randint(100,999)}'}
-    }
-    if room_key not in room_clients:
-        room_clients[room_key] = set()
-    room_clients[room_key].add(session_id)
+    with state_lock:
+        session_id = str(uuid.uuid4())
+        active_sessions[session_id] = {
+            'room': room_key,
+            'last_activity': datetime.now().isoformat(),
+            'user_info': user_info or {'name': f'User_{random.randint(100,999)}'}
+        }
+        if room_key not in room_clients:
+            room_clients[room_key] = set()
+        room_clients[room_key].add(session_id)
     return session_id
 
 def remove_session(session_id):
-    if session_id in active_sessions:
-        room = active_sessions[session_id]['room']
+    with state_lock:
+        session = active_sessions.pop(session_id, None)
+        if session is None:
+            return None
+
+        room = session['room']
         if room in room_clients:
             room_clients[room].discard(session_id)
             if not room_clients[room]:
                 del room_clients[room]
-        del active_sessions[session_id]
-        if session_id in websocket_clients:
-            del websocket_clients[session_id]
+        websocket_clients.pop(session_id, None)
+        websocket_send_locks.pop(session_id, None)
+        return session
 
 def apply_delta(scene_key, changes):
     scene = rooms[scene_key]
@@ -95,115 +103,184 @@ def apply_delta(scene_key, changes):
     
     rooms[scene_key] = scene
 
-async def broadcast_to_room(room_key, message, exclude_sid=None):
-    if room_key not in room_clients:
+def send_message(websocket, message, send_lock=None):
+    payload = json.dumps(message)
+    if send_lock is None:
+        websocket.send(payload)
         return
-    for sid in room_clients[room_key]:
-        if sid == exclude_sid:
-            continue
-        if sid in websocket_clients:
-            try:
-                await websocket_clients[sid].send(json.dumps(message))
-            except:
-                pass
 
-async def websocket_handler(websocket):
+    with send_lock:
+        websocket.send(payload)
+
+def broadcast_to_room(room_key, message, exclude_sid=None):
+    payload = json.dumps(message)
+    with state_lock:
+        clients = [
+            (sid, websocket_clients.get(sid), websocket_send_locks.get(sid))
+            for sid in room_clients.get(room_key, set())
+            if sid != exclude_sid
+        ]
+
+    for sid, websocket, send_lock in clients:
+        if websocket is None or send_lock is None:
+            continue
+        try:
+            with send_lock:
+                websocket.send(payload)
+        except Exception as error:
+            print(f"Could not send websocket message to {sid}: {error}")
+
+@sock.route('/ws')
+def websocket_handler(websocket):
     session_id = None
     room = None
+    send_lock = threading.Lock()
     
     try:
-        raw_msg = await websocket.recv()
-        msg = json.loads(raw_msg)
-        
-        if msg.get('type') == 'join':
+        raw_msg = websocket.receive()
+        if raw_msg is None:
+            return
+
+        try:
+            msg = json.loads(raw_msg)
+        except (json.JSONDecodeError, TypeError):
+            send_message(websocket, {
+                'type': 'error',
+                'message': 'Invalid JSON'
+            }, send_lock)
+            return
+
+        if not isinstance(msg, dict) or msg.get('type') != 'join':
+            send_message(websocket, {
+                'type': 'error',
+                'message': 'First message must be a join request'
+            }, send_lock)
+            return
+
+        try:
             room_key = int(msg.get('room'))
-            user_info = msg.get('user_info', {})
-            
-            if room_key not in rooms:
-                await websocket.send(json.dumps({
+        except (TypeError, ValueError):
+            send_message(websocket, {
+                'type': 'error',
+                'message': 'Invalid room'
+            }, send_lock)
+            return
+
+        user_info = msg.get('user_info') or {}
+
+        # Holding this client's send lock while registering guarantees that the
+        # joined snapshot is delivered before any broadcast from another thread.
+        with send_lock:
+            with state_lock:
+                if room_key not in rooms:
+                    websocket.send(json.dumps({
+                        'type': 'error',
+                        'message': 'Room not found'
+                    }))
+                    return
+
+                session_id = create_session(room_key, user_info)
+                websocket_clients[session_id] = websocket
+                websocket_send_locks[session_id] = send_lock
+                room = room_key
+                joined_message = json.dumps({
+                    'type': 'joined',
+                    'session_id': session_id,
+                    'room': room_key,
+                    'version': rooms[room_key]['version'],
+                    'nodes': rooms[room_key]['nodes'],
+                    'edges': rooms[room_key]['edges']
+                })
+                joined_user_info = active_sessions[session_id]['user_info']
+                total_clients = len(room_clients.get(room_key, set()))
+
+            websocket.send(joined_message)
+
+        broadcast_to_room(room_key, {
+            'type': 'user_joined',
+            'session_id': session_id,
+            'user_info': joined_user_info,
+            'total_clients': total_clients
+        })
+
+        while True:
+            raw_msg = websocket.receive()
+            if raw_msg is None:
+                break
+
+            try:
+                msg = json.loads(raw_msg)
+            except (json.JSONDecodeError, TypeError):
+                send_message(websocket, {
                     'type': 'error',
-                    'message': 'Room not found'
-                }))
-                return
-            
-            session_id = create_session(room_key, user_info)
-            websocket_clients[session_id] = websocket
-            room = room_key
-            
-            await websocket.send(json.dumps({
-                'type': 'joined',
-                'session_id': session_id,
-                'room': room_key,
-                'version': rooms[room_key]['version'],
-                'nodes': rooms[room_key]['nodes'],
-                'edges': rooms[room_key]['edges']
-            }))
-            
-            await broadcast_to_room(room_key, {
-                'type': 'user_joined',
-                'session_id': session_id,
-                'user_info': active_sessions[session_id]['user_info'],
-                'total_clients': len(room_clients.get(room_key, set()))
-            })
-            
-            async for raw_msg in websocket:
-                try:
-                    msg = json.loads(raw_msg)
-                    msg_type = msg.get('type')
-                    
-                    if msg_type == 'scene_change':
-                        changes = msg.get('changes')
-                        version = msg.get('version')
-                        
-                        if room not in rooms:
-                            continue
-                        
-                        if version != rooms[room]['version']:
-                            await websocket.send(json.dumps({
-                                'type': 'conflict',
-                                'server_version': rooms[room]['version']
-                            }))
-                            continue
-                        
+                    'message': 'Invalid JSON'
+                }, send_lock)
+                continue
+
+            if not isinstance(msg, dict):
+                send_message(websocket, {
+                    'type': 'error',
+                    'message': 'Message must be a JSON object'
+                }, send_lock)
+                continue
+
+            msg_type = msg.get('type')
+
+            if msg_type == 'scene_change':
+                changes = msg.get('changes')
+                version = msg.get('version')
+
+                with state_lock:
+                    if room not in rooms:
+                        continue
+
+                    if version != rooms[room]['version']:
+                        conflict_version = rooms[room]['version']
+                        new_version = None
+                    else:
                         apply_delta(room, changes)
                         rooms[room]['version'] += 1
                         rooms[room]['last_modified'] = datetime.now().isoformat()
-                        
-                        await broadcast_to_room(room, {
-                            'type': 'scene_update',
-                            'changes': changes,
-                            'version': rooms[room]['version'],
-                            'updated_by': session_id
-                        }, exclude_sid=session_id)
-                        
-                        await websocket.send(json.dumps({
-                            'type': 'update_success',
-                            'new_version': rooms[room]['version']
-                        }))
-                    
-                    elif msg_type == 'ping':
-                        await websocket.send(json.dumps({'type': 'pong'}))
-                    
-                    elif msg_type == 'leave':
-                        break
-                        
-                except json.JSONDecodeError:
-                    await websocket.send(json.dumps({
-                        'type': 'error',
-                        'message': 'Invalid JSON'
-                    }))
-    
-    except websockets.exceptions.ConnectionClosed:
-        pass
+                        active_sessions[session_id]['last_activity'] = datetime.now().isoformat()
+                        conflict_version = None
+                        new_version = rooms[room]['version']
+
+                if conflict_version is not None:
+                    send_message(websocket, {
+                        'type': 'conflict',
+                        'server_version': conflict_version
+                    }, send_lock)
+                    continue
+
+                broadcast_to_room(room, {
+                    'type': 'scene_update',
+                    'changes': changes,
+                    'version': new_version,
+                    'updated_by': session_id
+                }, exclude_sid=session_id)
+
+                send_message(websocket, {
+                    'type': 'update_success',
+                    'new_version': new_version
+                }, send_lock)
+
+            elif msg_type == 'ping':
+                with state_lock:
+                    if session_id in active_sessions:
+                        active_sessions[session_id]['last_activity'] = datetime.now().isoformat()
+                send_message(websocket, {'type': 'pong'}, send_lock)
+
+            elif msg_type == 'leave':
+                break
     finally:
         if session_id:
-            if room:
-                await broadcast_to_room(room, {
+            session = remove_session(session_id)
+            if room and session:
+                broadcast_to_room(room, {
                     'type': 'user_left',
                     'session_id': session_id,
-                    'user_info': active_sessions.get(session_id, {}).get('user_info')
+                    'user_info': session.get('user_info')
                 })
-            remove_session(session_id)
 
 @app.route("/")
 def index():
@@ -223,19 +300,20 @@ def docs_nodes():
 
 @app.route("/api/create_token/", methods=['GET'])
 def create_token():
-    room_id = 0
-    while room_id == 0 or room_id in rooms:
-        room_id = random.randint(1000, 9999)
-    
-    rooms[room_id] = {
-        "nodes": [],
-        "edges": [],
-        "version": 0,
-        "node_index": {},
-        "edge_index": {},
-        "created_at": datetime.now().isoformat(),
-        "last_modified": datetime.now().isoformat()
-    }
+    with state_lock:
+        room_id = 0
+        while room_id == 0 or room_id in rooms:
+            room_id = random.randint(1000, 9999)
+
+        rooms[room_id] = {
+            "nodes": [],
+            "edges": [],
+            "version": 0,
+            "node_index": {},
+            "edge_index": {},
+            "created_at": datetime.now().isoformat(),
+            "last_modified": datetime.now().isoformat()
+        }
     return str(room_id)
 
 @app.route("/api/get_data/", methods=['GET', 'POST'])
@@ -250,34 +328,27 @@ def get_data():
     except (ValueError, TypeError):
         return "Invalid key format", 400
     
-    if room_key in rooms:
-        return jsonify({
+    with state_lock:
+        if room_key not in rooms:
+            return "Key does not exist", 400
+
+        response = {
             "version": rooms[room_key]["version"],
             "nodes": rooms[room_key]["nodes"],
             "edges": rooms[room_key]["edges"]
-        })
-    else:
-        return "Key does not exist", 400
+        }
+        return jsonify(response)
 
 @app.route("/api/session_info/")
 def session_info():
-    return jsonify({
-        "active_sessions": len(active_sessions),
-        "rooms": {
-            room: len(clients) for room, clients in room_clients.items()
+    with state_lock:
+        response = {
+            "active_sessions": len(active_sessions),
+            "rooms": {
+                room: len(clients) for room, clients in room_clients.items()
+            }
         }
-    })
-
-async def main():
-    start_server = await websockets.serve(websocket_handler, "0.0.0.0", 8765)
-    
-    flask_thread = threading.Thread(
-        target=lambda: app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
-    )
-    flask_thread.daemon = True
-    flask_thread.start()
-    
-    await asyncio.Future()
+        return jsonify(response)
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    app.run(host=sys.argv[1] if len(sys.argv) > 1 else '127.0.0.1', port=int(sys.argv[2] if len(sys.argv) > 2 else 5000), debug=True, threaded=True)
