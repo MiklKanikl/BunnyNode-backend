@@ -351,4 +351,4 @@ def session_info():
         return jsonify(response)
 
 if __name__ == '__main__':
-    app.run(host=sys.argv[1] if len(sys.argv) > 1 else '127.0.0.1', port=int(sys.argv[2] if len(sys.argv) > 2 else 5000), debug=True, threaded=True)
+    app.run(host=sys.argv[1] if len(sys.argv) > 1 else '0.0.0.0', port=int(sys.argv[2] if len(sys.argv) > 2 else 5000), debug=True, threaded=True)
