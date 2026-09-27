@@ -5,299 +5,878 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>BunnyNode - Home</title>
   <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon.png">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100;14..32,200;14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #070b14;
+      --bg-strong: #0d1320;
+      --panel: rgba(11, 18, 31, 0.8);
+      --panel-strong: rgba(15, 23, 42, 0.95);
+      --line: rgba(148, 163, 184, 0.16);
+      --text: #e5eefb;
+      --muted: #9fb0c7;
+      --cyan: #67e8f9;
+      --blue: #60a5fa;
+      --blue-strong: #3b82f6;
+      --violet: #8b5cf6;
+      --green: #7dd3a7;
+      --shadow: rgba(2, 8, 23, 0.7);
+    }
+
     * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
       min-height: 100vh;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(96, 165, 250, 0.18) 0%, transparent 26%),
+        radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.18) 0%, transparent 28%),
+        linear-gradient(180deg, #050a12 0%, #0b1220 100%);
+      color: var(--text);
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
-      padding: 2rem 1.5rem;
-      position: relative;
-      overflow-y: auto;
-      overflow-x: hidden;
+      padding: 2rem 1.25rem 3rem;
     }
 
-    body::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -10%;
-      width: 500px;
-      height: 500px;
-      background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
-      border-radius: 50%;
-      pointer-events: none;
-      animation: float 6s ease-in-out infinite;
+    a {
+      color: inherit;
+      text-decoration: none;
     }
 
-    body::after {
-      content: '';
-      position: absolute;
-      bottom: -30%;
-      left: -5%;
-      width: 400px;
-      height: 400px;
-      background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
-      border-radius: 50%;
-      pointer-events: none;
-      animation: float 8s ease-in-out infinite reverse;
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(30px); }
-    }
-
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .container {
-      max-width: 900px;
-      width: 100%;
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(148, 163, 184, 0.12);
-      border-radius: 2.5rem;
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 100px rgba(59, 130, 246, 0.1);
-      padding: 4rem 3rem;
-      text-align: center;
+    .page-shell {
+      width: min(1200px, 100%);
       position: relative;
       z-index: 1;
-      animation: fadeInUp 0.8s ease-out;
     }
 
-    .container h1 {
-      font-size: 3.5rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      margin-bottom: 1.5rem;
-      background: linear-gradient(135deg, #e0e7ff 0%, #a5f3fc 50%, #86efac 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      line-height: 1.2;
-    }
-
-    .container p {
-      font-size: 1.15rem;
-      color: rgba(226, 232, 240, 0.9);
-      font-weight: 400;
-      margin-bottom: 3rem;
-      line-height: 1.6;
-      letter-spacing: 0.3px;
-    }
-
-    .links {
-      display: flex;
-      gap: 1.5rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .links a {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem 2rem;
-      font-weight: 600;
-      text-decoration: none;
-      border-radius: 1.25rem;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      font-size: 1rem;
-      position: relative;
-      overflow: hidden;
-      cursor: pointer;
-    }
-
-    .links a::before {
+    .page-shell::before,
+    .page-shell::after {
       content: '';
       position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: inherit;
-      filter: brightness(1.2);
-      transition: left 0.3s ease;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.45;
+      pointer-events: none;
       z-index: -1;
     }
 
-    .links a:first-child {
-      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-      color: white;
-      border: 1px solid rgba(59, 130, 246, 0.5);
-      box-shadow: 0 10px 25px rgba(59, 130, 246, 0.2);
+    .page-shell::before {
+      width: 420px;
+      height: 420px;
+      background: rgba(59, 130, 246, 0.18);
+      top: -80px;
+      right: -40px;
     }
 
-    .links a:first-child:hover {
-      transform: translateY(-4px) scale(1.05);
-      box-shadow: 0 20px 40px rgba(59, 130, 246, 0.4);
-      border-color: rgba(59, 130, 246, 0.8);
+    .page-shell::after {
+      width: 380px;
+      height: 380px;
+      background: rgba(139, 92, 246, 0.12);
+      bottom: 40px;
+      left: -90px;
     }
 
-    .links a:last-child {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
-      color: #a5f3fc;
-      border: 1.5px solid rgba(165, 243, 252, 0.3);
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.25rem;
+      width: 100%;
+      padding: 1rem 1.5rem;
+      border: 1px solid var(--line);
+      border-radius: 1.5rem;
+      background: rgba(10, 16, 27, 0.72);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 18px 40px rgba(2, 6, 23, 0.42);
+      margin-bottom: 2rem;
     }
 
-    .links a:last-child:hover {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(139, 92, 246, 0.25) 100%);
-      color: #ffffff;
-      border-color: rgba(165, 243, 252, 0.6);
-      transform: translateY(-4px);
-      box-shadow: 0 15px 35px rgba(59, 130, 246, 0.2);
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      font-size: 1.1rem;
     }
 
-    .showoff {
-      margin-top: 4rem;
+    .brand img {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 1.4rem;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .nav a {
+      transition: color 0.2s ease;
+    }
+
+    .nav a:hover {
+      color: var(--text);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 2.9rem;
+      padding: 0.8rem 1.2rem;
+      border-radius: 0.95rem;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+    }
+
+    .button.primary {
+      background: linear-gradient(135deg, var(--blue-strong), var(--violet));
+      box-shadow: 0 16px 30px rgba(91, 124, 255, 0.35);
+    }
+
+    .button.secondary {
+      background: rgba(15, 23, 42, 0.7);
+      border-color: var(--line);
+      color: var(--text);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      align-items: center;
+      gap: 2rem;
+      padding: 2.5rem 0 1rem;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.8rem;
+      border-radius: 999px;
+      background: rgba(103, 232, 249, 0.08);
+      border: 1px solid rgba(103, 232, 249, 0.18);
+      color: var(--cyan);
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 1.1rem;
+      font-weight: 700;
+    }
+
+    .hero-copy h1 {
+      font-size: clamp(2.8rem, 4vw, 5rem);
+      line-height: 0.98;
+      letter-spacing: -0.06em;
+      margin-bottom: 1.2rem;
+      font-weight: 800;
+    }
+
+    .hero-copy h1 .accent {
+      background: linear-gradient(135deg, var(--cyan) 0%, var(--blue) 45%, var(--violet) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .lead {
+      font-size: 1.08rem;
+      line-height: 1.8;
+      max-width: 620px;
+      color: var(--muted);
+      margin-bottom: 1.8rem;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.4rem;
+    }
+
+    .meta-list {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem 1rem;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .meta-list li {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: rgba(17, 24, 39, 0.75);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.5rem 0.8rem;
+    }
+
+    .meta-list li::before {
+      content: '';
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      box-shadow: 0 0 14px rgba(103, 232, 249, 0.8);
+    }
+
+    .hero-visual {
+      display: flex;
+      justify-content: center;
+    }
+
+    .dashboard {
+      width: min(100%, 520px);
+      border-radius: 1.75rem;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(12, 17, 27, 0.94));
+      box-shadow: 0 32px 90px rgba(2, 6, 23, 0.6);
+      overflow: hidden;
+    }
+
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid var(--line);
+      background: rgba(11, 17, 28, 0.8);
+    }
+
+    .traffic {
+      display: inline-flex;
+      gap: 0.5rem;
+    }
+
+    .traffic span {
+      width: 0.7rem;
+      height: 0.7rem;
+      border-radius: 50%;
+      display: block;
+    }
+
+    .traffic span:nth-child(1) { background: #f87171; }
+    .traffic span:nth-child(2) { background: #fbbf24; }
+    .traffic span:nth-child(3) { background: #4ade80; }
+
+    .window-tag {
+      color: var(--muted);
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .graph-canvas {
       position: relative;
-      bottom: auto;
-      left: auto;
-      transform: none;
-      z-index: 1;
+      min-height: 420px;
+      padding: 1.4rem;
+      background:
+        linear-gradient(rgba(148, 163, 184, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.04) 1px, transparent 1px),
+        rgba(9, 14, 22, 0.75);
+      background-size: 28px 28px, 28px 28px, auto;
+    }
+
+    .connection {
+      position: absolute;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(103, 232, 249, 0.12), rgba(96, 165, 250, 0.9), rgba(139, 92, 246, 0.65));
+      border-radius: 999px;
+      box-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
+    }
+
+    .c1 { left: 118px; top: 142px; width: 150px; transform: rotate(18deg); }
+    .c2 { right: 104px; top: 120px; width: 158px; transform: rotate(-18deg); }
+    .c3 { left: 165px; bottom: 123px; width: 180px; transform: rotate(-18deg); }
+    .c4 { right: 138px; bottom: 96px; width: 170px; transform: rotate(15deg); }
+
+    .node {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 118px;
+      padding: 0.85rem 1rem;
+      border-radius: 1rem;
+      border: 1px solid rgba(96, 165, 250, 0.32);
+      background: rgba(15, 23, 42, 0.82);
+      box-shadow: 0 14px 24px rgba(2, 8, 23, 0.4);
+      color: var(--text);
+      font-weight: 600;
+      font-size: 0.82rem;
+      letter-spacing: -0.02em;
+    }
+
+    .node::before {
+      content: '';
+      position: absolute;
+      inset: 8px auto auto 10px;
+      width: 0.45rem;
+      height: 0.45rem;
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(103, 232, 249, 0.8);
+    }
+
+    .n1 { left: 32px; top: 110px; }
+    .n2 { right: 28px; top: 90px; }
+    .n3 { left: 58px; bottom: 64px; }
+    .n4 { right: 46px; bottom: 38px; }
+    .n5 {
+      left: 50%;
+      top: 48%;
+      transform: translate(-50%, -50%);
+      min-width: 136px;
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(139, 92, 246, 0.18));
+      border-color: rgba(103, 232, 249, 0.42);
+    }
+
+    .mini-card {
+      position: absolute;
+      right: 22px;
+      bottom: 24px;
+      min-width: 140px;
+      padding: 0.8rem 0.9rem;
+      border-radius: 0.9rem;
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      box-shadow: 0 14px 24px rgba(2, 8, 23, 0.35);
+    }
+
+    .mini-card strong {
+      display: block;
+      font-size: 1.2rem;
+      letter-spacing: -0.04em;
+      margin-bottom: 0.2rem;
+    }
+
+    .mini-card span {
+      color: var(--muted);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: rgba(11, 18, 31, 0.66);
+      border: 1px solid var(--line);
+      border-radius: 1.25rem;
+      padding: 1.15rem 1.2rem;
+      box-shadow: 0 18px 30px rgba(2, 8, 23, 0.2);
+    }
+
+    .stat-card strong {
+      display: block;
+      font-size: clamp(1.7rem, 2vw, 2.2rem);
+      letter-spacing: -0.05em;
+      margin-bottom: 0.3rem;
+    }
+
+    .stat-card span {
+      color: var(--muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .feature-section {
+      padding: 3.5rem 0 1rem;
+    }
+
+    .section-intro {
+      margin-bottom: 1.75rem;
+    }
+
+    .section-intro p {
+      color: var(--cyan);
+      letter-spacing: 0.12em;
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 0.7rem;
+    }
+
+    .section-intro h2 {
+      font-size: clamp(2rem, 3vw, 3rem);
+      letter-spacing: -0.05em;
+      line-height: 1.05;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+
+    .feature-card {
+      background: linear-gradient(180deg, rgba(12, 18, 30, 0.82), rgba(10, 15, 24, 0.82));
+      border: 1px solid var(--line);
+      border-radius: 1.5rem;
+      padding: 1.4rem;
+      box-shadow: 0 18px 30px rgba(2, 8, 23, 0.18);
+      min-height: 220px;
       display: flex;
       flex-direction: column;
+    }
+
+    .icon {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 0.9rem;
+      display: inline-flex;
       align-items: center;
-      gap: 1.5rem;
-      width: 100%;
-      max-width: 900px;
-      padding: 2rem 2rem;
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(10px);
-      border-radius: 2rem;
-      border: 1px solid rgba(148, 163, 184, 0.2);
-      margin-top: 3rem;
-      animation: fadeInUp 0.8s ease-out 0.3s both;
-    }
-
-    .showoff h1 {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: #a5f3fc;
-      margin: 0;
-      letter-spacing: 0.02em;
-    }
-
-    .showoff h2 {
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: rgba(226, 232, 240, 0.8);
-      margin: 0;
-    }
-
-    .feature-heading {
-      font-size: 1.8rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, #a5f3fc 0%, #86efac 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: -0.02em;
-      margin: 0;
-    }
-
-    .feature-list {
-      display: flex;
-      gap: 2rem;
-      margin-top: 1.5rem;
-      margin-bottom: 2.5rem;
       justify-content: center;
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, rgba(103, 232, 249, 0.14), rgba(96, 165, 250, 0.15));
+      border: 1px solid rgba(103, 232, 249, 0.18);
+      color: var(--cyan);
+    }
+
+    .feature-card h3 {
+      font-size: 1.4rem;
+      margin-bottom: 0.65rem;
+      letter-spacing: -0.04em;
+    }
+
+    .feature-card p {
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 0.97rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .feature-card ul {
+      list-style: none;
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+      color: #cfe5ff;
+      font-size: 0.9rem;
+    }
+
+    .feature-card li {
+      position: relative;
+      padding-left: 0.9rem;
+    }
+
+    .feature-card li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.54rem;
+      width: 0.42rem;
+      height: 0.42rem;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--green), var(--cyan));
+      box-shadow: 0 0 10px rgba(125, 211, 167, 0.8);
+    }
+
+    .showcase {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.3rem;
+      align-items: center;
+      margin-top: 2.5rem;
+      padding: 1rem 0;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(11, 18, 31, 0.8), rgba(7, 12, 20, 0.88));
+      border: 1px solid var(--line);
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      box-shadow: 0 22px 38px rgba(2, 8, 23, 0.2);
+    }
+
+    .panel h3 {
+      font-size: 1.7rem;
+      letter-spacing: -0.05em;
+      margin-bottom: 0.8rem;
+    }
+
+    .panel p {
+      color: var(--muted);
+      line-height: 1.75;
+      margin-bottom: 1.1rem;
+    }
+
+    .tags {
+      display: flex;
       flex-wrap: wrap;
+      gap: 0.75rem;
     }
 
-    .feature-item {
-      font-size: 1.1rem;
-      font-weight: 500;
-      color: rgba(226, 232, 240, 0.9);
-      padding: 0.75rem 1.5rem;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 2rem;
-      transition: all 0.3s ease;
-      opacity: 0;
-      animation: fadeInUp 0.8s ease-out forwards;
+    .tags span {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.65rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      background: rgba(15, 23, 42, 0.75);
+      font-size: 0.8rem;
+      color: var(--text);
     }
 
-    .feature-item:nth-child(1) { animation-delay: 0.5s; }
-    .feature-item:nth-child(2) { animation-delay: 0.7s; }
-    .feature-item:nth-child(3) { animation-delay: 0.9s; }
+    .flow-map {
+      position: relative;
+      overflow: hidden;
+      min-height: 290px;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1), transparent 32%),
+        linear-gradient(180deg, rgba(11, 18, 31, 0.8), rgba(8, 13, 22, 0.9));
+    }
 
-    .feature-item:hover {
-      transform: translateY(-2px);
-      background: rgba(165, 243, 252, 0.1);
-      color: #a5f3fc;
+    .flow-node {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 120px;
+      border-radius: 1rem;
+      padding: 0.8rem 0.9rem;
+      border: 1px solid rgba(96, 165, 250, 0.32);
+      background: rgba(15, 23, 42, 0.82);
+      box-shadow: 0 12px 24px rgba(2, 8, 23, 0.22);
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .flow-node:nth-child(1) { left: 16%; top: 18%; }
+    .flow-node:nth-child(2) { right: 16%; top: 20%; }
+    .flow-node:nth-child(3) { left: 20%; bottom: 18%; }
+    .flow-node:nth-child(4) { right: 18%; bottom: 18%; }
+
+    .flow-node.center {
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      min-width: 138px;
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.18), rgba(139, 92, 246, 0.14));
+      border-color: rgba(103, 232, 249, 0.4);
+    }
+
+    .flow-map .line {
+      position: absolute;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(103, 232, 249, 0.4), rgba(96, 165, 250, 0.9), rgba(139, 92, 246, 0.6));
+      border-radius: 999px;
+      box-shadow: 0 0 10px rgba(96, 165, 250, 0.4);
+    }
+
+    .line.one { left: 27%; top: 34%; width: 32%; transform: rotate(12deg); }
+    .line.two { right: 26%; top: 34%; width: 32%; transform: rotate(-12deg); }
+    .line.three { left: 26%; bottom: 31%; width: 34%; transform: rotate(-12deg); }
+    .line.four { right: 23%; bottom: 31%; width: 34%; transform: rotate(12deg); }
+
+    .cta-panel {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.25rem;
+      margin-top: 2.5rem;
+      padding: 1.5rem 1.5rem;
+      border-radius: 1.5rem;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.14), rgba(139, 92, 246, 0.12));
+      border: 1px solid rgba(96, 165, 250, 0.2);
+      box-shadow: 0 30px 60px rgba(2, 8, 23, 0.25);
+    }
+
+    .cta-panel h3 {
+      font-size: clamp(1.7rem, 2.5vw, 2.5rem);
+      letter-spacing: -0.06em;
+      margin-bottom: 0.5rem;
+    }
+
+    .cta-panel p {
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    .cta-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .showcase,
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding-top: 1rem;
+      }
+
+      .nav {
+        display: none;
+      }
+
+      .topbar {
+        padding: 1rem 1rem;
+      }
+
+      .cta-panel {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
 
     @media (max-width: 640px) {
-      .container {
-        max-width: 900px;
-        width: 100%;
-        background: rgba(15, 23, 42, 0.7);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(148, 163, 184, 0.12);
-        border-radius: 2.5rem;
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 100px rgba(59, 130, 246, 0.1);
-        padding: 4rem 3rem;
-        text-align: center;
-        position: relative;
-        z-index: 1;
-        animation: fadeInUp 0.8s ease-out;
-        overflow-y: auto;
-        max-height: 90vh;
+      body {
+        padding: 1rem 0.8rem 2rem;
       }
 
-      .container h1 {
-        font-size: 2.25rem;
+      .topbar {
+        margin-bottom: 1.2rem;
       }
 
-      .container p {
-        font-size: 1rem;
+      .brand {
+        font-size: 0.95rem;
       }
 
-      .links {
-        flex-direction: column;
+      .header-actions {
+        gap: 0.5rem;
       }
 
-      .links a {
-        width: 100%;
+      .button {
+        min-height: 2.6rem;
+        padding: 0.72rem 0.9rem;
+        font-size: 0.82rem;
+      }
+
+      .hero-copy h1 {
+        font-size: 2.7rem;
+      }
+
+      .lead {
+        font-size: 0.98rem;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-card {
+        min-height: auto;
+      }
+
+      .graph-canvas {
+        min-height: 360px;
+      }
+
+      .cta-panel {
+        padding: 1.2rem;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <img src="/static/icons/favicon.png" alt="BunnyNode Logo" style="width: 120px; height: 120px;">
-    <h1>BunnyNode</h1>
-    <p>Diagrams and Data Visualisation for everyone</p>
-    <p>BunnyNode is a Graph Editor made for simple and intuitive data visualisation. It is leightweight and easy to use.</p>
-    <h2 class="feature-heading">Key Features</h2>
-    <div class="feature-list">
-      <span class="feature-item">Intuitive Graph Creation</span>
-      <span class="feature-item">Real-Time Collaboration</span>
-      <span class="feature-item">Export as PNG</span>
-    </div>
-    <div class="links">
-      <a href="/downloads">Download</a>
-      <a href="/docs/index">Documentation</a>
-    </div>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand">
+        <img src="/static/icons/favicon.png" alt="BunnyNode Logo">
+        <span>BunnyNode</span>
+      </div>
+
+      <nav class="nav" aria-label="Main navigation">
+        <a href="#overview">Overview</a>
+        <a href="#features">Features</a>
+        <a href="#use-cases">Use cases</a>
+        <a href="/docs/index">Docs</a>
+      </nav>
+
+      <div class="header-actions">
+        <a class="button secondary" href="/docs/index">Documentation</a>
+        <a class="button primary" href="/downloads">Download</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" id="overview">
+        <div class="hero-copy">
+          <p class="eyebrow">Graph editor</p>
+          <h1>Turn complex ideas into <span class="accent">clear systems</span>.</h1>
+          <p class="lead">BunnyNode is a lightweight diagram and data visualization tool built for mapping thought, structure, and relationships without friction.</p>
+
+          <div class="cta-row">
+            <a class="button primary" href="/downloads">Get BunnyNode</a>
+            <a class="button secondary" href="/docs/index">Read the docs</a>
+          </div>
+
+          <ul class="meta-list">
+            <li>Node-first workflow</li>
+            <li>Built for clarity</li>
+            <li>Fast visual thinking</li>
+          </ul>
+        </div>
+
+        <div class="hero-visual" aria-label="BunnyNode product preview">
+          <div class="dashboard">
+            <div class="dashboard-header">
+              <div class="traffic">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div class="window-tag">BunnyNode</div>
+            </div>
+
+            <div class="graph-canvas">
+              <div class="connection c1"></div>
+              <div class="connection c2"></div>
+              <div class="connection c3"></div>
+              <div class="connection c4"></div>
+
+              <div class="node n1">Ideas</div>
+              <div class="node n2">Data</div>
+              <div class="node n3">Flow</div>
+              <div class="node n4">Insights</div>
+              <div class="node n5">BunnyNode</div>
+
+              <div class="mini-card">
+                <strong>3.2x</strong>
+                <span>Faster mapping</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats" aria-label="Project benefits">
+        <div class="stat-card">
+          <strong>Simple</strong>
+          <span>Intuitive editing</span>
+        </div>
+        <div class="stat-card">
+          <strong>Connected</strong>
+          <span>Relationships matter</span>
+        </div>
+        <div class="stat-card">
+          <strong>Exportable</strong>
+          <span>Shareable visuals</span>
+        </div>
+      </section>
+
+      <section class="feature-section" id="features">
+        <div class="section-intro">
+          <p>Why BunnyNode</p>
+          <h2>Built for visual workflows.</h2>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="icon">01</div>
+            <h3>Diagram without friction</h3>
+            <p>Create clear graph structures using a simple node-based workflow that stays focused on the idea, not the tooling.</p>
+            <ul>
+              <li>Fast canvas interactions</li>
+              <li>Low learning curve</li>
+            </ul>
+          </article>
+
+          <article class="feature-card">
+            <div class="icon">02</div>
+            <h3>Map relationships</h3>
+            <p>Connect concepts, systems, data points, and processes in one place to reveal patterns and dependencies.</p>
+            <ul>
+              <li>Structure rich content</li>
+              <li>Discover connections</li>
+            </ul>
+          </article>
+
+          <article class="feature-card">
+            <div class="icon">03</div>
+            <h3>Share and export</h3>
+            <p>Turn diagrams into presentable visuals with export support, making it easy to share work with your team or audience.</p>
+            <ul>
+              <li>PNG export</li>
+              <li>Presentation ready</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="showcase" id="use-cases">
+        <div class="panel">
+          <div class="section-intro">
+            <p>Use cases</p>
+            <h2>For systems, flows, and ideas.</h2>
+          </div>
+          <p>BunnyNode is designed to support the way people think: visually, modularly, and iteratively. It works well for concept maps, architecture diagrams, decision paths, and data relationships.</p>
+          <div class="tags" aria-label="Project use types">
+            <span>Flowcharts</span>
+            <span>Architecture</span>
+            <span>Process maps</span>
+            <span>Concept maps</span>
+          </div>
+        </div>
+
+        <div class="panel flow-map" aria-label="Flow map preview">
+          <div class="line one"></div>
+          <div class="line two"></div>
+          <div class="line three"></div>
+          <div class="line four"></div>
+
+          <div class="flow-node">Input</div>
+          <div class="flow-node">Logic</div>
+          <div class="flow-node">Output</div>
+          <div class="flow-node">Insights</div>
+          <div class="flow-node center">System</div>
+        </div>
+      </section>
+
+      <section class="cta-panel">
+        <div>
+          <h3>Start building your next diagram.</h3>
+          <p>Explore the project, install the app, and see how BunnyNode can help you structure ideas and communicate them clearly.</p>
+        </div>
+
+        <div class="cta-actions">
+          <a class="button primary" href="/downloads">Download</a>
+          <a class="button secondary" href="/docs/index">Documentation</a>
+        </div>
+      </section>
+    </main>
   </div>
 </body>
 </html>
