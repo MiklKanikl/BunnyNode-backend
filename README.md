@@ -1,4 +1,26 @@
-# BunnyNode Backend with Integrated WebSocket
-A version with a new websocket that isn't routed on a separate endpoint, but directly integrated into the main application under the "/ws/" route.
+# BunnyNode-backend
 
-A client version ([BunnyNode Client ws](https://github.com/fabi5210/BunnyNode-ws)) connects to this integrated WebSocket endpoint.
+Website and backend for the BunnyNode desktop app:
+
+[BunnyNode](https://github.com/MiklKanikl/BunnyNode)
+
+This backend is a Flask app and flask-sock websocket. It has the Website for BunnyNode and the Websocket to use the BunnyNode online mode.
+
+## Requirements
+the project needs python 3.12 or newer and uses Flask and Flask-sock
+
+install python
+
+https://www.python.org/downloads/
+
+install uv
+
+https://docs.astral.sh/uv/getting-started/installation/
+
+run the app
+
+## Run
+
+```bash
+uv run main.py
+```
