@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import random
 import sys
 import threading
@@ -7,6 +8,8 @@ import uuid
 from datetime import datetime
 
 from flask import Flask, jsonify, render_template, request
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_sock import Sock
 
 logging.basicConfig(
@@ -15,6 +18,13 @@ logging.basicConfig(
 )
 
 app = Flask(__name__)
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["50 per hour"],
+    storage_uri="memory://",
+    headers_enabled=True,
+)
 sock = Sock(app)
 
 rooms = {}
@@ -299,6 +309,7 @@ def docs_nodes():
     return render_template("docs/nodes.html")
 
 @app.route("/api/create_token/", methods=['GET'])
+@limiter.limit("10 per minute", override_defaults=False)
 def create_token():
     with state_lock:
         room_id = 0
